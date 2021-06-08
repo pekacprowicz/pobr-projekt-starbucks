@@ -1,0 +1,6 @@
+#ifndef POBR_PROJEKT_COEFFICIENTS_H
+#define POBR_PROJEKT_COEFFICIENTS_H
+
+
+
+#endif

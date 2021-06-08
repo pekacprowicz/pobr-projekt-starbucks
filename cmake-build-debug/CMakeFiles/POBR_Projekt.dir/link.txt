@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/POBR_Projekt.dir/main.cpp.o -o POBR_Projekt 
