@@ -57,7 +57,6 @@ namespace structures {
         std::vector<cv::Rect2i> newRectangles;
         bool overlaps;
         for (auto const& rectangle: rectangles) {
-//            rangesToBeAddedAsNew.clear();
             if (newRectangles.empty())
                 newRectangles.push_back(rectangle);
             else {
@@ -70,6 +69,27 @@ namespace structures {
                         int y = std::min(rectangle.y, checkedRectangle.y);
                         int height = std::max(rectangle.y + rectangle.height, checkedRectangle.y + checkedRectangle.height) - y;
                         checkedRectangle = cv::Rect2i(x, y, width, height);
+                    }
+                }
+                if (!overlaps)
+                    newRectangles.push_back(rectangle);
+            }
+        }
+        return newRectangles;
+    }
+
+    std::vector<cv::Rect2i> concatOverlappingRectanglesSmallestArea(std::vector<cv::Rect2i> rectangles) {
+        std::vector<cv::Rect2i> newRectangles;
+        bool overlaps;
+        for (auto const& rectangle: rectangles) {
+            if (newRectangles.empty())
+                newRectangles.push_back(rectangle);
+            else {
+                overlaps = false;
+                for (auto & checkedRectangle : newRectangles) {
+                    if ((rectangle & checkedRectangle).area() > 0) {
+                        overlaps = true;
+                        checkedRectangle = checkedRectangle & rectangle;
                     }
                 }
                 if (!overlaps)

@@ -31,17 +31,14 @@ int main(int argc, char *argv[]) {
     auto pyrWhiteWider = processing::Pyramid(org_image, color::WHITE_WIDER);
     std::vector<cv::Rect2i> resultsWhiteWider = pyrWhiteWider.analyze();
 
+    std::vector<cv::Rect2i> results;
+    results.insert(std::begin(results), std::begin(resultsGreen), std::end(resultsGreen));
+    results.insert(std::begin(results), std::begin(resultsWhite), std::end(resultsWhite));
+    results.insert(std::begin(results), std::begin(resultsWhiteWider), std::end(resultsWhiteWider));
+    results = structures::concatOverlappingRectanglesSmallestArea(results);
 
-    for (auto rect : resultsGreen) {
-        cv::rectangle(org_image, rect, cv::Scalar(50), 4);
-    }
-
-    for (auto rect : resultsWhite) {
-        cv::rectangle(org_image, rect, cv::Scalar(50));
-    }
-
-    for (auto rect : resultsWhiteWider) {
-        cv::rectangle(org_image, rect, cv::Scalar(50));
+    for (auto rect : results) {
+        cv::rectangle(org_image, rect, cv::Scalar(21, 37, 213), 4);
     }
 
     cv::imshow("result", org_image);
