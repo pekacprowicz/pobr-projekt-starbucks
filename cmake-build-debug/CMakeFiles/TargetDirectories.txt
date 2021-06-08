@@ -1,3 +1,0 @@
-/home/pekacprowicz/CLionProjects/POBR-Projekt/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/pekacprowicz/CLionProjects/POBR-Projekt/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/pekacprowicz/CLionProjects/POBR-Projekt/cmake-build-debug/CMakeFiles/pobr_starbucks.dir
