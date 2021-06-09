@@ -249,49 +249,54 @@ namespace processing {
         cv::Point centroidPoint = cv::Point(bBox.x + (int) centroid.i, bBox.y + (int) centroid.j);
         cv::Point minDistancePoint = centroidPoint;
         int step = 1;
+
         while (true) {
             minDistancePoint.x += step;
+            if (minDistancePoint.x >= image.cols) return;
             if (image.at<uchar>(minDistancePoint.y, minDistancePoint.x) == 1) { break; }
             minDistancePoint.y += step;
+            if (minDistancePoint.y >= image.rows) return;
             if (image.at<uchar>(minDistancePoint.y, minDistancePoint.x) == 1) { break; }
             step++;
             minDistancePoint.x -= step;
+            if (minDistancePoint.x < 0) return;
             if (image.at<uchar>(minDistancePoint.y, minDistancePoint.x) == 1) { break; }
             minDistancePoint.y -= step;
+            if (minDistancePoint.y < 0) return;
             if (image.at<uchar>(minDistancePoint.y, minDistancePoint.x) == 1) { break; }
             step++;
         }
         cv::Rect2i minimumRect = cv::Rect2i(minDistancePoint.x, minDistancePoint.y, 1, 1);
 
-        cv::Mat dbg = color::binaryDebug(image);
-        cv::circle(dbg, centroidPoint, 2, cv::Scalar(125), 2);
-        cv::circle(dbg, minDistancePoint, 2, cv::Scalar(150, 150, 150), 2);
-
         if (minDistancePoint.x < 0 || minDistancePoint.y < 0) return;
 
         cv::Rect2i tempMinRect = cv::Rect2i(minimumRect.x - 1, minimumRect.y - 1, minimumRect.width + 2, minimumRect.height + 2);
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             while (minimumRect.x > bBox.x && sumOfCol(image(tempMinRect), 0) > 0) {
                 minimumRect.x--;
                 minimumRect.width++;
                 tempMinRect = cv::Rect2i(minimumRect.x - 1, minimumRect.y - 1, minimumRect.width + 2, minimumRect.height + 2);
+                if (tempMinRect.x < 0 || tempMinRect.x + tempMinRect.width >= image.cols) return;
             }
 
             while (minimumRect.x + minimumRect.width < bBox.x + bBox.width - 1 && sumOfCol(image(tempMinRect), tempMinRect.width - 1) > 0) {
                 minimumRect.width++;
                 tempMinRect = cv::Rect2i(minimumRect.x - 1, minimumRect.y - 1, minimumRect.width + 2, minimumRect.height + 2);
+                if (tempMinRect.x < 0 || tempMinRect.x + tempMinRect.width >= image.cols) return;
             }
 
             while (minimumRect.y > bBox.y && sumOfRow(image(tempMinRect), 0) > 0) {
                 minimumRect.y--;
                 minimumRect.height++;
                 tempMinRect = cv::Rect2i(minimumRect.x - 1, minimumRect.y - 1, minimumRect.width + 2, minimumRect.height + 2);
+                if (tempMinRect.y < 0 || tempMinRect.y + tempMinRect.height >= image.rows) return;
             }
 
             while (minimumRect.y + minimumRect.height < bBox.y + bBox.height - 1 && sumOfRow(image(tempMinRect), tempMinRect.height - 1) > 0) {
                 minimumRect.height++;
                 tempMinRect = cv::Rect2i(minimumRect.x - 1, minimumRect.y - 1, minimumRect.width + 2, minimumRect.height + 2);
+                if (tempMinRect.y < 0 || tempMinRect.y + tempMinRect.height >= image.rows) return;
             }
             tempMinRect = cv::Rect2i(minimumRect.x - 1, minimumRect.y - 1, minimumRect.width + 2, minimumRect.height + 2);
         }
@@ -466,14 +471,15 @@ namespace processing {
                         processing::adjustBoundingBox(_baseImageBinary, roiRect);
                         _thImg = closing(_baseImageBinary(roiRect));
                         feature::BasicGeometricFeatures features(_thImg);
+                        feature::Centroid centroid(_thImg);
                         double s_l = (double) features.S / (double) features.L;
-                        if (s_l > 1.8 && s_l < 2.6) {
+                        expandBoundingBox(_baseImageBinary, roiRect, centroid);
+                        if (s_l > 1.6 && s_l < 2.6) {
                             feature::Coefficients thCoeff(_thImg);
                             if (thCoeff.W9 > 0.084 && thCoeff.W9 < 0.16) {
-                                feature::Centroid centroid(_thImg);
+
                                 cv::Point geometricCenter = getGeometricCenter(_thImg);
                                 if (centroid.distance(geometricCenter) / roiRect.size().area() < 0.001) {
-                                    expandBoundingBox(_baseImageBinary, roiRect, centroid);
                                     results.push_back(roiRect);
                                 } else {
                                     expandBoundingBox(_baseImageBinary, roiRect, centroid);
@@ -529,7 +535,7 @@ namespace processing {
                     return coeff.W4 > 0.1 && coeff.W4 < 0.8 && im.M7 > 0.015 && im.M7 < 0.08/* && im.M3 < 0.01*/;
                 case color::WHITE:
                 case color::WHITE_WIDER:
-                    return coeff.W4 > 0.2 && coeff.W4 < 0.4 && im.M7 > 0.04 && im.M7 < 0.07 && im.M3 < 0.1;
+                    return coeff.W4 > 0.2 && coeff.W4 < 0.5 && im.M7 > 0.04 && im.M7 < 0.09 && im.M3 < 0.1;
             }
         }
     };
