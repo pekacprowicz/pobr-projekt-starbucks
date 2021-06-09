@@ -4,15 +4,10 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
-#include <fstream>
-#include <stdio.h>
-#include <cstdlib>
-#include <cmath>
 
 #include "feature.h"
 #include "processing.h"
 #include "color.h"
-
 
 int main(int argc, char *argv[]) {
 
@@ -41,8 +36,7 @@ int main(int argc, char *argv[]) {
         cv::rectangle(org_image, rect, cv::Scalar(21, 37, 213), 4);
     }
 
-    cv::imshow("result", org_image);
-    cv::waitKey(-1);
+    cv::imwrite(argv[2], org_image);
 
     return 0;
 }

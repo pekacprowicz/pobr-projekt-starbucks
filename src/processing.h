@@ -7,9 +7,6 @@
 namespace processing {
 
     int sumOfRow(const cv::Mat_<uchar>& image, int row) {
-//        std::cout << "Row: " << row << std::endl;
-//        cv::imshow("sumOfRow", color::binaryDebug(image));
-//        cv::waitKey(-1);
         for (int col = 0; col < image.cols; col++) {
             if (image.at<uchar>(row, col) == 1) return 1;
         }
@@ -17,9 +14,6 @@ namespace processing {
     }
 
     int sumOfCol(const cv::Mat_<uchar>& image, int col) {
-//        std::cout << "Col: " << col << std::endl;
-//        cv::imshow("sumOfCol", color::binaryDebug(image));
-//        cv::waitKey(-1);
         for (int row = 0; row < image.rows; row++) {
             uchar val = image.at<uchar>(row, col);
             if (val == 1) return 1;
@@ -27,28 +21,20 @@ namespace processing {
         return 0;
     }
 
-    double distance(cv::Point pointA, cv::Point pointB) {
-        return std::sqrt(std::pow(pointA.x - pointB.x, 2) + std::pow(pointA.y - pointB.y, 2));
-    }
-
     cv::Mat_<cv::Vec3b> expand(const cv::Mat &image, int rows, int cols) {
         int _rows = image.rows + rows;
         int _cols = image.cols + cols;
-        //float data[_rows * _cols * 3];
-//        cv::Vec3b data[_rows * _cols];
         cv::Mat_<cv::Vec3b>  _I = cv::Mat(_rows, _cols, CV_8UC3);
 
         for (int i = 0; i < (rows/2); i++)
             for (int j = 0; j < (cols/2); j++)
                 for (int ch = 0; ch < 3; ch++)
                     _I(i, j)[ch] = 0;
-//                    data[getDataIndex(i, j, _cols)][ch] = 0;
 
         for (int i = _I.rows - (rows/2); i < _I.rows; i++)
             for (int j = _I.cols - (cols/2); j < _I.cols; j++)
                 for (int ch = 0; ch < 3; ch++)
                     _I(i, j)[ch] = 0;
-//                    data[getDataIndex(i, j, _cols)][ch] = 0;
 
         for (int i = 0; i < image.rows; i++)
             for (int j = 0; j < image.cols; j++)
@@ -78,7 +64,6 @@ namespace processing {
                                                                                 j - (kernelSize / 2) + m)[ch] * _ker(k, m);
                                 }
                             res.at<cv::Vec3f>(i - (kernelSize/2), j - (kernelSize/2))[ch] = sum * scalar;
-//                            data[getDataIndex(i - (kernelSize/2), j - (kernelSize/2), image.cols)][ch] = sum * scalar;
                         }
                     }
                 }
@@ -120,8 +105,6 @@ namespace processing {
     void createWindows(const cv::Mat &image, std::vector<WindowStruct<MatType>> &_windows) {
         int windowSize = 100;
         int stepSize = 8;
-        int _cols = (int) std::ceil(image.cols / (double) windowSize);
-        int _rows = (int) std::ceil(image.rows / (double) windowSize);
 
         cv::Mat_<MatType> _window;
         int colsRangeBegin, colsRangeEnd, rowsRangeBegin, rowsRangeEnd;
@@ -136,28 +119,11 @@ namespace processing {
                 _window = image(cv::Range(rowsRangeBegin, rowsRangeEnd),
                                 cv::Range(colsRangeBegin, colsRangeEnd)
                 );
-//                cv::imshow("windowbindbg", color::binaryDebug(_window));
-//                cv::waitKey(-1);
                 _windows.push_back(WindowStruct<uchar>{_window, cv::Range(rowsRangeBegin, rowsRangeEnd), cv::Range(colsRangeBegin, colsRangeEnd)});
                 row++;
             } while (row * stepSize + windowSize < image.rows);
             col++;
         } while (col * stepSize + windowSize < image.cols);
-
-//        for (int col = 0; col < _cols; col++) {
-//            colsRangeEnd = (col + 2) * windowSize < image.cols ? (col + 2) * windowSize : image.cols;
-//            colsRangeBegin = std::max(colsRangeEnd != image.cols ? col * windowSize : (col - 1) * windowSize, 0);
-//            for (int row = 0; row < _rows; row++) {
-//                rowsRangeEnd = (row + 2) * windowSize < image.rows ? (row + 2) * windowSize : image.rows;
-//                rowsRangeBegin = std::max(rowsRangeEnd != image.rows ? row * windowSize : (row - 1) * windowSize, 0);
-//                _window = image(cv::Range(rowsRangeBegin, rowsRangeEnd),
-//                                cv::Range(colsRangeBegin, colsRangeEnd)
-//                );
-//                cv::imshow("windowbindbg", color::binaryDebug(_window));
-//                cv::waitKey(-1);
-//                _windows.push_back(WindowStruct<uchar>{_window, cv::Range(rowsRangeBegin, rowsRangeEnd), cv::Range(colsRangeBegin, colsRangeEnd)});
-//            }
-//        }
     }
 
     cv::Rect2i getBoundingBox(const cv::Mat_<uchar> &image) {
@@ -282,17 +248,6 @@ namespace processing {
     void expandBoundingBox(const cv::Mat_<uchar> &image, cv::Rect2i &bBox, feature::Centroid centroid) {
         cv::Point centroidPoint = cv::Point(bBox.x + (int) centroid.i, bBox.y + (int) centroid.j);
         cv::Point minDistancePoint = centroidPoint;
-//        image.forEach([&](auto &pixel, const int position[])-> void {
-//            if (position[0] > bBox.x && position[0] < bBox.x + bBox.width && position[1] > bBox.y && position[1] < bBox.y + bBox.height) {
-//                if (pixel == 1) {
-//                    tempPoint = cv::Point(position[0], position[1]);
-//                    if (distance(tempPoint, centroidPoint) < minDistance) {
-//                        minDistance = distance(tempPoint, centroidPoint);
-//                        minDistancePoint = tempPoint;
-//                    }
-//                }
-//            }
-//        });
         int step = 1;
         while (true) {
             minDistancePoint.x += step;
@@ -318,10 +273,6 @@ namespace processing {
 
         for (int i = 0; i < 3; i++) {
             while (minimumRect.x > bBox.x && sumOfCol(image(tempMinRect), 0) > 0) {
-//            cv::Mat _dbg = dbg.clone();
-//            cv::rectangle(_dbg, minimumRect, cv::Scalar(69), 2);
-//            cv::imshow("sumOfRow", _dbg);
-//            cv::waitKey(-1);
                 minimumRect.x--;
                 minimumRect.width++;
                 tempMinRect = cv::Rect2i(minimumRect.x - 1, minimumRect.y - 1, minimumRect.width + 2, minimumRect.height + 2);
@@ -346,11 +297,6 @@ namespace processing {
         }
 
         minimumRect = tempMinRect.size().area() > 0.1 * bBox.size().area() ? tempMinRect : bBox;
-        cv::rectangle(dbg, minimumRect, cv::Scalar(69), 2);
-        cv::rectangle(dbg, bBox, cv::Scalar(47), 2);
-
-//        cv::imshow("expandBB", dbg);
-//        cv::waitKey(-1);
 
         bBox = minimumRect;
     }
@@ -434,8 +380,6 @@ namespace processing {
         Pyramid(const cv::Mat_<cv::Vec3b> &image, color::PatternColor pattern = color::GREEN) : _baseImage(image), _pattern(pattern) {
             cv::Mat_<cv::Vec3b> tempImage = _baseImage;
             _baseImageBinary = color::createBinaryImage(_baseImage, _pattern);
-//            cv::imshow("_baseImageBinary",color::binaryDebug(_baseImageBinary));
-//            cv::waitKey(-1);
             int level = 0;
             do {
                 _images.push_back(Element{opening(color::createBinaryImage(tempImage, _pattern)), level++});
@@ -461,56 +405,34 @@ namespace processing {
             int i = 0;
             int roiID;
 
-            cv::Mat _b = _baseImage.clone(); //TODO DELETE
-
             switch (_pattern) {
                 case color::GREEN:
                     for (auto const &roi : ROIs) {
                         cv::Rect2i roiRect = structures::createRectFromRanges(roi.rangeRows, roi.rangeCols);
-                        std::cout << " ::: rect: " << roiRect << std::endl;
                         processing::adjustBoundingBox(_baseImageBinary, roiRect);
                         _thImg = closing(_baseImageBinary(roiRect));
                         feature::BasicGeometricFeatures features(_thImg);
-                        std::cout << "S: " << features.S << " ::: L: " << features.L << std::endl;
-                        std::cout << "S/L: " << (double) features.S / (double) features.L << std::endl;
-//                        cv::imshow("multipleThreshold", color::binaryDebug(_thImg));
-//                        cv::waitKey(-1);
                         double s_l = (double) features.S / (double) features.L;
                         if (s_l > 2.1 && s_l < 2.8) {
                             feature::Centroid centroid(_thImg);
                             cv::Point geometricCenter = getGeometricCenter(_thImg);
                             feature::Coefficients thCoeff(_thImg);
-                            std::cout << "W9: " << thCoeff.W9 << std::endl;
                             if (thCoeff.W9 > 0.084 && thCoeff.W9 < 0.16) {
-                                std::cout << "distance/area: " << centroid.distance(geometricCenter) / roiRect.size().area() << std::endl;
-
                                 if (centroid.distance(geometricCenter) / roiRect.size().area() < 0.001) {
-//                                cv::imshow("greenfinal", _baseImage(roiRect));
-//                                cv::waitKey(-1);
                                     expandBoundingBox(_baseImageBinary, rectResult, centroid);
                                     results.push_back(roiRect);
                                 } else {
-//                                    cv::imshow("greenfinal_before", _baseImage(roiRect));
-//                                    cv::waitKey(-1);
                                     expandBoundingBox(_baseImageBinary, roiRect, centroid);
-//                                    cv::imshow("greenfinal_after", _baseImage(roiRect));
-//                                    cv::waitKey(-1);
                                     _thImg = closing(_baseImageBinary(roiRect));
                                     centroid = feature::Centroid(_thImg);
                                     geometricCenter = getGeometricCenter(_thImg);
                                     feature::Coefficients thCoeff = feature::Coefficients(_thImg);
-                                    std::cout << "distance/area again: " << centroid.distance(geometricCenter) / roiRect.size().area() << std::endl;
                                     if (centroid.distance(geometricCenter) / roiRect.size().area() < 0.001 && thCoeff.W9 > 0.084 && thCoeff.W9 < 0.16) {
                                         results.push_back(roiRect);
                                     }
                                 }
                             }
                         }
-
-//                        cv::Mat _b = _baseImage.clone();
-//                        cv::rectangle(_b, roiRect, cv::Scalar(50), 2);
-//                        cv::imshow("_b", _b);
-//                        cv::waitKey(-1);
                         color::multipleThresholdValue(_baseImage(roiRect), multipleThreshold, _pattern);
                     }
 
@@ -520,42 +442,18 @@ namespace processing {
                         if (rect.size().area() == 0) continue;
                         _thImg = closing(thImg(rect));
                         feature::BasicGeometricFeatures features(_thImg);
-                        std::cout << " ::: rect: " << rect << std::endl;
-                        std::cout << "S: " << features.S << " ::: L: " << features.L << std::endl;
-                        std::cout << "S/L: " << (double) features.S / (double) features.L << std::endl;
                         double s_l = (double) features.S / (double) features.L;
                         if (s_l > 2.1 && s_l < 3.3) {
                             feature::Coefficients thCoeff(_thImg);
-
-                            std::cout << "W9: " << thCoeff.W9 << std::endl;
-
                             if (thCoeff.W9 > 0.08 && thCoeff.W9 < 0.16) {
                                 rectResult = structures::createRectFromRanges(ROIs.at(roiID).rangeRows, ROIs.at(roiID).rangeCols);
                                 _thImg = _baseImageBinary(rectResult);
                                 feature::Centroid centroid(_thImg);
                                 cv::Point geometricCenter = getGeometricCenter(_thImg);
-                                std::cout << "distance/area: " << centroid.distance(geometricCenter) / rectResult.size().area() << std::endl;
-                                cv::imshow("multipleThreshold_before", color::binaryDebug(_baseImageBinary(rectResult)));
-                                cv::waitKey(-1);
                                 if (centroid.distance(geometricCenter) / rectResult.size().area() < 0.001) {
-
                                     expandBoundingBox(_baseImageBinary, rectResult, centroid);
-
-//                                    cv::imshow("multipleThreshold_after", color::binaryDebug(_baseImageBinary(rectResult)));
-//                                    cv::waitKey(-1);
                                     results.push_back(rectResult);
                                 }
-//                                else {
-//                                    expandBoundingBox(_baseImageBinary, rectResult, centroid);
-//                                    _thImg = closing(_baseImageBinary(rectResult));
-//                                    centroid = feature::Centroid(_thImg);
-//                                    geometricCenter = getGeometricCenter(_thImg);
-//                                    std::cout << "distance/area again: " << centroid.distance(geometricCenter) / rectResult.size().area() << std::endl;
-//                                    if (centroid.distance(geometricCenter) / rectResult.size().area() < 0.001)
-//                                        results.push_back(rectResult);
-//                                }
-//                                cv::imshow("multipleThreshold", _baseImage(rectResult));
-//                                cv::waitKey(-1);
                             }
                         }
                         i++;
@@ -565,37 +463,23 @@ namespace processing {
                 default: //color::WHITE:
                     for (auto const &roi : ROIs) {
                         cv::Rect2i roiRect = structures::createRectFromRanges(roi.rangeRows, roi.rangeCols);
-                        std::cout << " ::: rect: " << roiRect << std::endl;
                         processing::adjustBoundingBox(_baseImageBinary, roiRect);
                         _thImg = closing(_baseImageBinary(roiRect));
                         feature::BasicGeometricFeatures features(_thImg);
-                        std::cout << "S: " << features.S << " ::: L: " << features.L << std::endl;
-                        std::cout << "S/L: " << (double) features.S / (double) features.L << std::endl;
                         double s_l = (double) features.S / (double) features.L;
-//                                                        cv::imshow("whiteFinalAnalysis", _baseImage(roiRect));
-//                        cv::waitKey(-1);
                         if (s_l > 1.8 && s_l < 2.6) {
                             feature::Coefficients thCoeff(_thImg);
-                            std::cout << "W9: " << thCoeff.W9 << std::endl;
                             if (thCoeff.W9 > 0.084 && thCoeff.W9 < 0.16) {
                                 feature::Centroid centroid(_thImg);
                                 cv::Point geometricCenter = getGeometricCenter(_thImg);
-                                std::cout << "distance/area: " << centroid.distance(geometricCenter) / roiRect.size().area() << std::endl;
-                                                        cv::imshow("whiteFinalAnalysis", _baseImage(roiRect));
-                        cv::waitKey(-1);
                                 if (centroid.distance(geometricCenter) / roiRect.size().area() < 0.001) {
-//                                   cv::imshow("before", _baseImage(roiRect));
-//                                    cv::waitKey(-1);
                                     expandBoundingBox(_baseImageBinary, roiRect, centroid);
-//                                    cv::imshow("after", _baseImage(roiRect));
-//                                    cv::waitKey(-1);
                                     results.push_back(roiRect);
                                 } else {
                                     expandBoundingBox(_baseImageBinary, roiRect, centroid);
                                     _thImg = closing(_baseImageBinary(roiRect));
                                     centroid = feature::Centroid(_thImg);
                                     geometricCenter = getGeometricCenter(_thImg);
-                                    std::cout << "distance/area again: " << centroid.distance(geometricCenter) / roiRect.size().area() << std::endl;
                                     if (centroid.distance(geometricCenter) / roiRect.size().area() < 0.001)
                                         results.push_back(roiRect);
                                 }
@@ -620,18 +504,7 @@ namespace processing {
                     if (area <= 0) continue;
                     cv::Mat_<uchar> toAnalyze = cv::Mat_<uchar>(winStruct.window, bBox);
                     if (toAnalyze.rows == 0) continue;
-//                        std::cout << " ::: M7: " << im.M7 <<  " ::: W4: " << coeff.W4 << std::endl;
-//                        std::cout << "M1: " << im.M1 << " ::: M2: " << im.M2 << " ::: M3: " << im.M3 << " ::: M4: " << im.M4 << " ::: M5: " << im.M5 << " ::: M6: " << im.M6 << " ::: M7: " << im.M7 << std::endl;
                     if (couldBeROI(toAnalyze)) {
-//                        std::cout << " ::: M7: " << im.M7 <<  " ::: W4: " << coeff.W4 << std::endl;
-//                        std::cout << "M1: " << im.M1 << " ::: M2: " << im.M2 << " ::: M3: " << im.M3 << " ::: M4: " << im.M4 << " ::: M5: " << im.M5 << " ::: M6: " << im.M6 << " ::: M7: " << im.M7 << std::endl;
-//                        if (_pattern == color::GREEN) {
-//                            cv::imshow("window_baseImage", _baseImage(cv::Range((winStruct.rangeRows.start + bBox.y) * (level.level + 1),
-//                                                                      (winStruct.rangeRows.start + bBox.y + bBox.height) * (level.level + 1)), cv::Range((winStruct.rangeCols.start + bBox.x) * (level.level + 1),
-//                                                                                                                                                         (winStruct.rangeCols.start + bBox.x + bBox.width) * (level.level + 1))));
-//                            cv::waitKey(-1);
-//
-//                        }
                         cv::Mat dbg = color::binaryDebug(toAnalyze);
                         possibleResults.push_back(structures::RangesStruct{
                                 cv::Range((winStruct.rangeRows.start + bBox.y) * (level.level + 1),
@@ -653,17 +526,9 @@ namespace processing {
             feature::Coefficients coeff = feature::Coefficients(image);
             switch (_pattern) {
                 case color::GREEN:
-//                    if (coeff.W4 > 0.1 && coeff.W4 < 0.8 && im.M7 > 0.015 && im.M7 < 0.08) {
-//                    std::cout << " ::: M7: " << im.M7 <<  " ::: W4: " << coeff.W4 << std::endl;
-//                    std::cout << "M1: " << im.M1 << " ::: M2: " << im.M2 << " ::: M3: " << im.M3 << " ::: M4: " << im.M4 << " ::: M5: " << im.M5 << " ::: M6: " << im.M6 << " ::: M7: " << im.M7 << std::endl;
-//                    }
                     return coeff.W4 > 0.1 && coeff.W4 < 0.8 && im.M7 > 0.015 && im.M7 < 0.08/* && im.M3 < 0.01*/;
                 case color::WHITE:
                 case color::WHITE_WIDER:
-//                    if (coeff.W4 > 0.2 && coeff.W4 < 0.4 && im.M7 > 0.04 && im.M7 < 0.07 && im.M3 < 0.1) {
-//                    std::cout << " ::: M7: " << im.M7 <<  " ::: W4: " << coeff.W4 << std::endl;
-//                    std::cout << "M1: " << im.M1 << " ::: M2: " << im.M2 << " ::: M3: " << im.M3 << " ::: M4: " << im.M4 << " ::: M5: " << im.M5 << " ::: M6: " << im.M6 << " ::: M7: " << im.M7 << std::endl;
-//                    }
                     return coeff.W4 > 0.2 && coeff.W4 < 0.4 && im.M7 > 0.04 && im.M7 < 0.07 && im.M3 < 0.1;
             }
         }

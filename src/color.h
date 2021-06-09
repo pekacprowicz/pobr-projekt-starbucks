@@ -9,6 +9,35 @@ namespace color {
         WHITE_WIDER
     };
 
+    void bgrToHsv(const cv::Mat& source, cv::Mat& destination) {
+        source.forEach<cv::Vec3b>([&](auto &pixel, const int position[])-> void {
+            double Rp = pixel[2] / 255.0;
+            double Gp = pixel[1] / 255.0;
+            double Bp = pixel[0] / 255.0;
+            double Cmax = std::max(std::max(Rp, Gp), Bp);
+            double Cmin = std::min(std::min(Rp, Gp), Bp);
+            double delta = Cmax - Cmin;
+
+            if (delta == 0) {
+                destination.at<cv::Vec3b>(position[0], position[1])[0] = 0;
+            } else if (Cmax == Rp) {
+                destination.at<cv::Vec3b>(position[0], position[1])[0] = std::lround((60 * std::fmod(((Gp - Bp) / delta), 6.0)) / 2);
+            } else if (Cmax == Gp) {
+                destination.at<cv::Vec3b>(position[0], position[1])[0] = std::lround((60 * (((Bp - Rp) / delta) + 2.0)) / 2);
+            } else if (Cmax == Bp) {
+                destination.at<cv::Vec3b>(position[0], position[1])[0] = std::lround((60 * (((Rp - Gp) / delta) + 4.0)) / 2);
+            }
+
+            if (Cmax == 0) {
+                destination.at<cv::Vec3b>(position[0], position[1])[1] = 0;
+            } else {
+                destination.at<cv::Vec3b>(position[0], position[1])[1] = std::lround((delta / Cmax) * 255);
+            }
+
+            destination.at<cv::Vec3b>(position[0], position[1])[2] = std::lround(Cmax * 255);
+        });
+    }
+
     bool inRange(cv::Vec3b &pixel, PatternColor searchedColor) {
         bool H_condition, S_condition, V_condition;
         switch (searchedColor) {
@@ -40,14 +69,12 @@ namespace color {
         image.forEach([&](uchar &pixel, const int position[])-> void {
             debug.at<uchar>(position[0], position[1]) = pixel == 1 ? 255 : 0;
         });
-//        cv::imshow("binaryDebug", debug);
-//        cv::waitKey(-1);
         return debug;
     }
 
     cv::Mat_<uchar> createBinaryImage(const cv::Mat &image, PatternColor searchedColor) {
-        cv::Mat hsv_image = cv::Mat_<uchar>(image.rows, image.cols);
-        cv::cvtColor(image, hsv_image, cv::COLOR_BGR2HSV);
+        cv::Mat hsv_image = cv::Mat_<cv::Vec3b>(image.rows, image.cols);
+        bgrToHsv(image, hsv_image);
         cv::Mat_<uchar> binaryImage = cv::Mat_<uchar>(image.rows, image.cols);
 
         hsv_image.forEach<cv::Vec3b>([&](auto &pixel, const int position[])-> void {
@@ -58,8 +85,8 @@ namespace color {
     }
 
     void multipleThresholdValue(const cv::Mat &image, std::vector<cv::Mat_<uchar>>& result, PatternColor searchedColor) {
-        cv::Mat hsv_image = cv::Mat_<uchar>(image.rows, image.cols);
-        cv::cvtColor(image, hsv_image, cv::COLOR_BGR2HSV);
+        cv::Mat hsv_image = cv::Mat_<cv::Vec3b>(image.rows, image.cols);
+        bgrToHsv(image, hsv_image);
 
         if (image.rows <= 0 || image.cols <= 0) return;
         cv::Mat_<uchar> thresholdImage = cv::Mat_<uchar>(image.rows, image.cols);
